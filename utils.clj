@@ -2,13 +2,19 @@
 ; Move this to some general location ( %GD%/scripts...?) and user from everywere (eg. ChineseWriter)
 
 (ns Utils
-  (:require [clojure.string :as str]))
+  (:require [clojure.string :as str])
+  (:use clojure.test))
 
 ; General helpers
 
-(defn single? [coll] (= (count coll) 1 ) )
+(defn single? 
+    { :test (fn [] (are [x y] (= x y)
+        false (single? [])
+        true  (single? [666])
+        false (single? [111 666]))) }
+    [coll] (= (count coll) 1 ) )
 
-(defn pairs-to-map [ list-of-pairs ]
+(defn- pairs-to-map [ list-of-pairs ]
   (let [ pair-to-map (fn [[key,value]] {key value}) ]
     (apply merge (map pair-to-map list-of-pairs))))
 
@@ -20,17 +26,31 @@
   (let [ f (fn [ [k,v] ] { (f-keys k) (f-values v) } ) ]
     (apply merge (map f (seq m)))))
 
-(defn map-map-values [ f-values m ] (map-map-keys-values identity f-values m))
+(defn map-map-values 
+    { :test (fn [] (is (= { :a 11 :b 21 } (map-map-values (partial + 1) { :a 10 :b 20 })))) }
+    [ f-values m ] (map-map-keys-values identity f-values m))
 
-(defn map-map-keys [ f-keys m ] (map-map-keys-values f-keys identity m))
-
-(defn zip [list1 list2] (map vec (partition 2 (interleave list1 list2) )))
+; Clojure has already zipmap, but that does not preserve the order of items which is sometimes important
+(defn zip 
+    { :test (fn [] (are [x y] (= x y) 
+        [ [1 :a] [2 :b] [3 :c] ]    (zip [ 1 2 3 ] [ :a :b :c ] )
+        [ [1 :a] [2 :b] ]           (zip [ 1 2 3 ] [ :a :b ] )
+        [ [1 :a] [2 :b] ]           (zip [ 1 2 ] [ :a :b :c ] ) )) }
+    [list1 list2] (map vec (partition 2 (interleave list1 list2) )))
 
 ; String utils
 
-(defn starts-with [str start] (if (> (count start) (count str)) false (= start (subs str 0 (count start)))))
+(defn starts-with 
+    { :test (fn [] (are [x y] (= x y) 
+        true (starts-with "moikka" "moi")
+        false (starts-with "moikka" "hei") )) }
+    [str start] (if (> (count start) (count str)) false (= start (subs str 0 (count start)))))
 
-(defn equal-caseless [ str1 str2 ] (= (str/lower-case str1) (str/lower-case str2)))
+(defn equal-caseless? 
+    { :test (fn [] (are [x y] (= x y) 
+        true (equal-caseless? "fOoBar" "FOObar")
+        false (equal-caseless? "fOoBar" "FOObarz") )) }
+    [ str1 str2 ] (= (str/lower-case str1) (str/lower-case str2)))
 
 ; Clojure pretty-printing
 ; Performance notes:
@@ -39,9 +59,19 @@
 ; Now back on regular logic and simple method, 4 sec and consise code.
 ; Adding special test (string? item) goes to 1.5 sec :-)
 
-(def indent-str (memoize (fn [level] (str "\n" (apply str (repeat level "    "))))))
+(defn- indent-str-raw 
+    { :test (fn [] (are [x y] (= x y) 
+        "\n" (indent-str-raw 0)
+        "\n    " (indent-str-raw 1)
+        "\n        " (indent-str-raw 2) )) }
+    [level] (str "\n" (apply str (repeat level "    "))))
+    
+(def indent-str (memoize indent-str-raw))
 
-(defn sorted-map-items [m] (seq (apply sorted-map (apply concat (seq m)))))
+(defn sorted-map-items 
+    { :test (fn [] (are [x y] (= x y) 
+        [[:a 3] [:b 1] [:x 5] [:y 7]] (sorted-map-items { :x 5 :a 3 :y 7 :b 1 }) )) }
+    [m] (seq (apply sorted-map (apply concat (seq m)))))
 
 (defn pretty-pr
   ( [item] (pretty-pr item 0) )
@@ -62,3 +92,7 @@
 (defn write-to-file [ path value ] (spit path value :encoding "UTF-8" :append false))
 
 (defn load-from-file [ path ] (read-string (slurp path :encoding "UTF-8")))
+
+
+
+(run-tests)
