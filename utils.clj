@@ -3,11 +3,12 @@
 
 (ns Utils
   (:require [clojure.string :as str])
+  (:use clojure.set)
   (:use clojure.test))
 
 ; General helpers
 
-(defn single? 
+(defn single?
     { :test (fn [] (are [x y] (= x y)
         false (single? [])
         true  (single? [666])
@@ -26,13 +27,13 @@
   (let [ f (fn [ [k,v] ] { (f-keys k) (f-values v) } ) ]
     (apply merge (map f (seq m)))))
 
-(defn map-map-values 
+(defn map-map-values
     { :test (fn [] (is (= { :a 11 :b 21 } (map-map-values (partial + 1) { :a 10 :b 20 })))) }
     [ f-values m ] (map-map-keys-values identity f-values m))
 
 ; Clojure has already zipmap, but that does not preserve the order of items which is sometimes important
-(defn zip 
-    { :test (fn [] (are [x y] (= x y) 
+(defn zip
+    { :test (fn [] (are [x y] (= x y)
         [ [1 :a] [2 :b] [3 :c] ]    (zip [ 1 2 3 ] [ :a :b :c ] )
         [ [1 :a] [2 :b] ]           (zip [ 1 2 3 ] [ :a :b ] )
         [ [1 :a] [2 :b] ]           (zip [ 1 2 ] [ :a :b :c ] ) )) }
@@ -40,14 +41,14 @@
 
 ; String utils
 
-(defn starts-with 
-    { :test (fn [] (are [x y] (= x y) 
+(defn starts-with
+    { :test (fn [] (are [x y] (= x y)
         true (starts-with "moikka" "moi")
         false (starts-with "moikka" "hei") )) }
     [str start] (if (> (count start) (count str)) false (= start (subs str 0 (count start)))))
 
-(defn equal-caseless? 
-    { :test (fn [] (are [x y] (= x y) 
+(defn equal-caseless?
+    { :test (fn [] (are [x y] (= x y)
         true (equal-caseless? "fOoBar" "FOObar")
         false (equal-caseless? "fOoBar" "FOObarz") )) }
     [ str1 str2 ] (= (str/lower-case str1) (str/lower-case str2)))
@@ -59,19 +60,24 @@
 ; Now back on regular logic and simple method, 4 sec and consise code.
 ; Adding special test (string? item) goes to 1.5 sec :-)
 
-(defn- indent-str-raw 
-    { :test (fn [] (are [x y] (= x y) 
+(defn- indent-str-raw
+    { :test (fn [] (are [x y] (= x y)
         "\n" (indent-str-raw 0)
         "\n    " (indent-str-raw 1)
         "\n        " (indent-str-raw 2) )) }
     [level] (str "\n" (apply str (repeat level "    "))))
-    
+
 (def indent-str (memoize indent-str-raw))
 
-(defn sorted-map-items 
-    { :test (fn [] (are [x y] (= x y) 
+(defn sorted-map-items
+    { :test (fn [] (are [x y] (= x y)
         [[:a 3] [:b 1] [:x 5] [:y 7]] (sorted-map-items { :x 5 :a 3 :y 7 :b 1 }) )) }
     [m] (seq (apply sorted-map (apply concat (seq m)))))
+
+(defn index-single [items key]
+  (map-map-keys-values key first (index items [key])))
+
+(defn index-by-id [items] (index-single items :id))
 
 (defn pretty-pr
   ( [item] (pretty-pr item 0) )
