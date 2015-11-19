@@ -1,6 +1,6 @@
-(ns Xml
+(ns xml
   (:require [clojure.string :as str])
-  (:use Utils)
+  (:use utils)
   (:use clojure.test))
 
 ;----------------- xml to text string -------------------------
