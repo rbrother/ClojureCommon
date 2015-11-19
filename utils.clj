@@ -39,6 +39,12 @@
         [ [1 :a] [2 :b] ]           (zip [ 1 2 ] [ :a :b :c ] ) )) }
     [list1 list2] (map vec (partition 2 (interleave list1 list2) )))
 
+(defn range2d
+  { :test (fn [] (is (= 9 (count (range2d (range 3) (range 3)))))) }
+  [ range1 range2 ]
+    (let [ combine (fn [value1] (map #(vector value1 %) range2)) ]
+      (mapcat combine range1)))
+
 ; String utils
 
 (defn starts-with
