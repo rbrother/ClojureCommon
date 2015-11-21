@@ -1,4 +1,4 @@
-(ns xml
+(ns clojure-common.xml
   (:require [clojure.string :as str])
   (:use utils)
   (:use clojure.test))

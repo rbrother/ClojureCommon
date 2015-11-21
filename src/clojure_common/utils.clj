@@ -1,7 +1,7 @@
 ; General utility functions usable in any application.
 ; Move this to some general location ( %GD%/scripts...?) and user from everywere (eg. ChineseWriter)
 
-(ns utils
+(ns clojure-common.utils
   (:require [clojure.string :as str])
   (:use clojure.set)
   (:use clojure.test))
