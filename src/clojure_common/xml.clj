@@ -28,4 +28,8 @@
   ( [ [ tag attrs & content ] indent ]
     (str (indent-str indent) "<" (name tag) (attrs-to-str attrs)
          (if (empty? content) "/>"
-           (str ">" (content-to-str content (inc indent)) (indent-str indent) "</" (name tag) ">" )))))
+           (str ">"
+             (if (string? (first content))
+               (first content)
+               (str (content-to-str content (inc indent)) (indent-str indent)))
+              "</" (name tag) ">" )))))
