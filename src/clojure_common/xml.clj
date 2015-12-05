@@ -24,7 +24,7 @@
   (str/join "" (map #(xml-to-text % ind) content)))
 
 (defn xml-to-text
-  ( [ element ] (xml-to-text element 0) )
+  ( [ item ] (if (string? item) item (xml-to-text item 0)))
   ( [ [ tag attrs & content ] indent ]
     (str (indent-str indent) "<" (name tag) (attrs-to-str attrs)
          (if (empty? content) "/>"
