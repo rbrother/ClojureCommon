@@ -31,7 +31,8 @@
     { :test (fn [] (is (= { :a 11 :b 21 } (map-map-values (partial + 1) { :a 10 :b 20 })))) }
     [ f-values m ] (map-map-keys-values identity f-values m))
 
-; Clojure has already zipmap, but that does not preserve the order of items which is sometimes important
+; Clojure has already zipmap, but that does not preserve the order of items and
+; does not work if there are identical items (can't have two different keys) which is sometimes important
 (defn zip
     { :test (fn [] (are [x y] (= x y)
         [ [1 :a] [2 :b] [3 :c] ]    (zip [ 1 2 3 ] [ :a :b :c ] )
@@ -44,6 +45,30 @@
   [ range1 range2 ]
     (let [ combine (fn [value1] (map #(vector value1 %) range2)) ]
       (mapcat combine range1)))
+
+; Math
+
+(defn min-pos
+  { :test (fn [] (is (= [ 7 -4 ] (min-pos [ [ 7 12 ] [ 8 -4 ] ] )))) }
+  [ vectors ] (apply mapv min vectors))
+
+(defn max-pos
+  { :test (fn [] (is (= [ 8 12 ] (max-pos [ [ 7 12 ] [ 8 -4 ] ] )))) }
+  [ vectors ] (apply mapv max vectors))
+
+(defn pos> [ [ x1 y1 ] [ x2 y2 ] ] (and (> x1 x2) (> y1 y2)))
+(defn pos< [ [ x1 y1 ] [ x2 y2 ] ] (and (< x1 x2) (< y1 y2)))
+
+(defn distance [ vec1 ] (Math/sqrt (apply + (map * vec1 vec1))))
+
+(defn mul-vec [ vec1 scalar ] (map * vec1 (repeat scalar)))
+
+(defn inside-rect? [ pos [ small-corner large-corner ] ]
+  (and (pos> pos small-corner) (pos< pos large-corner)))
+
+(defn polar [ degrees distance ]
+  (let [ radians (/ degrees 57.2958) ]
+    (mul-vec [ (Math/sin radians) (Math/cos radians) ] distance)))
 
 ; String utils
 
@@ -104,7 +129,5 @@
 (defn write-to-file [ path value ] (spit path value :encoding "UTF-8" :append false))
 
 (defn load-from-file [ path ] (read-string (slurp path :encoding "UTF-8")))
-
-
 
 (run-tests)
