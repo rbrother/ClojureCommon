@@ -48,6 +48,8 @@
 
 ; Math
 
+(defn round-any [ value ] (if (integer? value) value (Math/round value)))
+
 (defn min-pos
   { :test (fn [] (is (= [ 7 -4 ] (min-pos [ [ 7 12 ] [ 8 -4 ] ] )))) }
   [ vectors ] (apply mapv min vectors))
@@ -113,16 +115,15 @@
 (defn pretty-pr
   ( [item] (pretty-pr item 0) )
   ( [item indent]
-    (cond
-      (string? item) (str "\"" item "\"") ; Special case for string to avoid performance hit of pr-str for this common case
-      (not (coll? item)) (pr-str item)
-      :else
-        (let [ child-indent (inc indent), ind (indent-str child-indent) ]
-           (if-not (map? item)
-             (str "[" ind (str/join ind (map #(pretty-pr % child-indent) item)) " ]" )
-             (let [ pr-entry (fn [ [key,value] ] (str key " " (pretty-pr value child-indent))) ]
-               (str "{" ind (str/join ind (map pr-entry (sorted-map-items item))) " }" )))))))
-
+    (let [ child-indent (inc indent), ind (indent-str child-indent) ]
+      (cond
+        (string? item) (str "\"" item "\"") ; Special case for string to avoid performance hit of pr-str for this common case
+        (not (coll? item)) (pr-str item)
+        (and (map? item) (empty? item)) "{ }"
+        (map? item)
+          (let [ pr-entry (fn [ [key,value] ] (str key " " (pretty-pr value child-indent))) ]
+            (str "{" ind (str/join ind (map pr-entry (sorted-map-items item))) " }" ))
+        :else (str "[   " (str/join ind (map #(pretty-pr % child-indent) item)) " ]" )))))
 
 ; File utils
 
