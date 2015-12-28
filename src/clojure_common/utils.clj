@@ -112,23 +112,51 @@
 
 (defn index-by-id [items] (index-single items :id))
 
+(def pretty-pr)
+
+(defn- get-separator [ string-values child-indent ]
+  (let [ lengths (map count string-values)
+         is-simple (and (every? #(< % 120) lengths) (< (apply + lengths) 120)) ]
+    (if is-simple " " (indent-str child-indent))))
+
+(defn pretty-map-content [ m child-indent ]
+  (let [ values-resolved (sorted-map-items (map-map-values (fn [ value ] (pretty-pr value child-indent)) m))
+         resolved-values (map last values-resolved)
+         separator (get-separator resolved-values child-indent)
+         pr-entry (fn [ [ key value ] ] (str key " " value)) ]
+    (str separator (str/join separator (map pr-entry values-resolved)))))
+
+(defn pretty-arr-content [ arr child-indent ]
+  (let [ resolved-values (map #(pretty-pr % child-indent) arr)
+         separator (get-separator resolved-values child-indent) ]
+    (str separator (str/join separator resolved-values))))
+
 (defn pretty-pr
   ( [item] (pretty-pr item 0) )
   ( [item indent]
-    (let [ child-indent (inc indent), ind (indent-str child-indent) ]
+    (let [ child-indent (inc indent) ]
       (cond
         (string? item) (str "\"" item "\"") ; Special case for string to avoid performance hit of pr-str for this common case
         (not (coll? item)) (pr-str item)
         (and (map? item) (empty? item)) "{ }"
-        (map? item)
-          (let [ pr-entry (fn [ [key,value] ] (str key " " (pretty-pr value child-indent))) ]
-            (str "{" ind (str/join ind (map pr-entry (sorted-map-items item))) " }" ))
-        :else (str "[   " (str/join ind (map #(pretty-pr % child-indent) item)) " ]" )))))
+        (map? item) (str "{" (pretty-map-content item child-indent) " }" )
+        :else (str "[" (pretty-arr-content item child-indent) " ]" )))))
 
 ; File utils
 
-(defn write-to-file [ path value ] (spit path value :encoding "UTF-8" :append false))
+(defn write-to-file [ path value ] (spit path (pretty-pr value) :encoding "UTF-8" :append false))
 
 (defn load-from-file [ path ] (read-string (slurp path :encoding "UTF-8")))
+
+; Test utils
+
+(defn compare-structure [ calculated expected ]
+  (let [ failed (fn []
+           (println "expected:")
+           (println (pretty-pr expected))
+           (println "calculated:")
+           (println (pretty-pr calculated))
+           false ) ]
+    (if (= calculated expected) true (failed))))
 
 (run-tests)
