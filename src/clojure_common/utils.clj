@@ -123,13 +123,15 @@
   (let [ values-resolved (sorted-map-items (map-map-values (fn [ value ] (pretty-pr value child-indent)) m))
          resolved-values (map last values-resolved)
          separator (get-separator resolved-values child-indent)
+         starter (if (= separator " ") " " "   ")
          pr-entry (fn [ [ key value ] ] (str key " " value)) ]
-    (str separator (str/join separator (map pr-entry values-resolved)))))
+    (str starter (str/join separator (map pr-entry values-resolved)))))
 
 (defn pretty-arr-content [ arr child-indent ]
   (let [ resolved-values (map #(pretty-pr % child-indent) arr)
-         separator (get-separator resolved-values child-indent) ]
-    (str separator (str/join separator resolved-values))))
+         separator (get-separator resolved-values child-indent)
+         starter (if (= separator " ") " " "   ") ]
+    (str starter (str/join separator resolved-values))))
 
 (defn pretty-pr
   ( [item] (pretty-pr item 0) )
