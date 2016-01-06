@@ -68,6 +68,10 @@
 (defn inside-rect? [ pos [ small-corner large-corner ] ]
   (and (pos> pos small-corner) (pos< pos large-corner)))
 
+(defn rect-size
+  { :test (fn [] (is (= (rect-size [ [ -10.0 -12.0 ] [ 14.0 7.0 ] ]) [ 24.0 19.0 ] ))) }
+  [ [ min-corner max-corner ] ] (map - max-corner min-corner))
+
 (defn polar [ degrees distance ]
   (let [ radians (/ degrees 57.2958) ]
     (mul-vec [ (Math/sin radians) (Math/cos radians) ] distance)))
