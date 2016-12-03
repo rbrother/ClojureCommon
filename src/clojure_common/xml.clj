@@ -26,10 +26,15 @@
 (defn xml-to-text
   ( [ item ] (if (string? item) item (xml-to-text item 0)))
   ( [ [ tag attrs & content ] indent ]
-    (str (indent-str indent) "<" (name tag) (attrs-to-str attrs)
-         (if (empty? content) "/>"
-           (str ">"
-             (if (string? (first content))
-               (first content)
-               (str (content-to-str content (inc indent)) (indent-str indent)))
-              "</" (name tag) ">" )))))
+    (cond
+      (map? attrs)
+        (str (indent-str indent) "<" (name tag) (attrs-to-str attrs)
+             (if (empty? content) "/>"
+               (str ">"
+                 (if (string? (first content))
+                   (first content)
+                   (str (content-to-str content (inc indent)) (indent-str indent)))
+                  "</" (name tag) ">" )))
+      attrs (xml-to-text `[ ~tag {} ~attrs ~@content] indent)
+      :else (xml-to-text [ tag {} ""] indent) )))
+
