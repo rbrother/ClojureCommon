@@ -23,18 +23,23 @@
 (defn- content-to-str [ content ind ]
   (str/join "" (map #(xml-to-text % ind) content)))
 
+(defn- single-atomic? [ [ first & rest ] ] (and (not (coll? first)) (empty? rest)))
+
 (defn xml-to-text
-  ( [ item ] (if (string? item) item (xml-to-text item 0)))
-  ( [ [ tag attrs & content ] indent ]
-    (cond
-      (map? attrs)
-        (str (indent-str indent) "<" (name tag) (attrs-to-str attrs)
-             (if (empty? content) "/>"
-               (str ">"
-                 (if (string? (first content))
-                   (first content)
-                   (str (content-to-str content (inc indent)) (indent-str indent)))
-                  "</" (name tag) ">" )))
-      attrs (xml-to-text `[ ~tag {} ~attrs ~@content] indent)
-      :else (xml-to-text [ tag {} ""] indent) )))
+  ( [ item ] (xml-to-text item 0))
+  ( [ item indent ]
+    (if (coll? item)
+      (let [ [ tag & content ] item ]
+        (cond
+          (not content) (xml-to-text tag {} [] indent)
+          (map? (first content)) (xml-to-text tag (first content) (rest content) indent)
+          :else (xml-to-text tag {} content indent)))
+      (str item)))
+  ( [ tag attrs content indent ]
+    (let [ t (name tag) ind (indent-str indent) end-tag (str "</" t ">") ]
+    (str ind "<" t (attrs-to-str attrs)
+         (cond
+           (empty? content) "/>"
+           (single-atomic? content) (str ">" (first content) end-tag)
+           :else (str ">" (content-to-str content (inc indent)) ind end-tag )    )))))
 
