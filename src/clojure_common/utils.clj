@@ -165,4 +165,3 @@
            false ) ]
     (if (= calculated expected) true (failed))))
 
-(run-tests)
