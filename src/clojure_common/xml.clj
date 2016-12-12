@@ -25,6 +25,9 @@
 
 (defn- single-atomic? [ [ first & rest ] ] (and (not (coll? first)) (empty? rest)))
 
+; Browsers do not understand collapsed <script src="..."/>, must be <script src="..."></script>
+(def do-not-collapse-tags #{ :script } )
+
 (defn xml-to-text
   ( [ item ] (xml-to-text item 0))
   ( [ item indent ]
@@ -39,7 +42,7 @@
     (let [ t (name tag) ind (indent-str indent) end-tag (str "</" t ">") ]
     (str ind "<" t (attrs-to-str attrs)
          (cond
-           (empty? content) "/>"
+           (and (empty? content) (not (contains? do-not-collapse-tags tag))) "/>"
            (single-atomic? content) (str ">" (first content) end-tag)
            :else (str ">" (content-to-str content (inc indent)) ind end-tag )    )))))
 
