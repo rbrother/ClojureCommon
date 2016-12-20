@@ -26,7 +26,7 @@
 (defn- single-atomic? [ [ first & rest ] ] (and (not (coll? first)) (empty? rest)))
 
 ; Browsers do not understand collapsed <script src="..."/>, must be <script src="..."></script>
-(def do-not-collapse-tags #{ :script } )
+(def do-not-collapse-tags #{ :script :span } )
 
 (defn xml-to-text
   ( [ item ] (xml-to-text item 0))
