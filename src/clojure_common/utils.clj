@@ -27,6 +27,13 @@
   (let [ f (fn [ [k,v] ] { (f-keys k) (f-values v) } ) ]
     (apply merge (map f (seq m)))))
 
+(defn index-single [ list-of-maps key ]
+  { :test (fn [] (is (= {:a {:id :a, :val 6}, :b {:id :b, :val 88}}
+                        (index-simple [ {:id :a :val 6} { :id :b :val 88 } ] :id ) ))) }
+  (map-map-keys-values key first (index list-of-maps [ key ] )))
+
+(defn index-by-id [items] (index-single items :id))
+
 (defn map-map-values
     { :test (fn [] (is (= { :a 11 :b 21 } (map-map-values (partial + 1) { :a 10 :b 20 })))) }
     [ f-values m ] (map-map-keys-values identity f-values m))
@@ -111,11 +118,6 @@
         [[:a 3] [:b 1] [:x 5] [:y 7]] (sorted-map-items { :x 5 :a 3 :y 7 :b 1 }) )) }
     [m] (seq (apply sorted-map (apply concat (seq m)))))
 
-(defn index-single [items key]
-  (map-map-keys-values key first (index items [key])))
-
-(defn index-by-id [items] (index-single items :id))
-
 (def pretty-pr)
 
 (defn- get-separator [ string-values child-indent ]
@@ -146,6 +148,7 @@
         (not (coll? item)) (pr-str item)
         (and (map? item) (empty? item)) "{ }"
         (map? item) (str "{" (pretty-map-content item child-indent) " }" )
+        (set? item) (str "#{" (pretty-arr-content item child-indent) " }" )
         :else (str "[" (pretty-arr-content item child-indent) " ]" )))))
 
 ; File utils
