@@ -15,6 +15,20 @@
         false (single? [111 666]))) }
     [coll] (= (count coll) 1 ) )
 
+(defn list-contains?
+  { :test (fn [] (is (= true (list-contains? [ 1 7 6 6] 7)))) }
+  [ arr item ] (some #(= % item) arr))
+
+; From set or map it's easy to remove one item, but it's sometimes needed
+; also from list when we have use case with duplicates (like TI3 AC pack)
+(defn remove-single
+  { :test (fn [] (is (= [ 1 6 6 5 2 ] (remove-single [ 1 6 5 6 5 2 ] 5))))}
+  [ arr item ]
+  (let [ not-item-pred (fn [i] (not= i item))]
+    (concat
+      (take-while not-item-pred arr)
+      (rest (drop-while not-item-pred arr)))    ))
+
 (defn- pairs-to-map [ list-of-pairs ]
   (let [ pair-to-map (fn [[key,value]] {key value}) ]
     (apply merge (map pair-to-map list-of-pairs))))
