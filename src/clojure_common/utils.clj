@@ -174,11 +174,16 @@
 ; Test utils
 
 (defn compare-structure [ calculated expected ]
-  (let [ failed (fn []
-           (println "expected:")
-           (println (pretty-pr expected))
-           (println "calculated:")
-           (println (pretty-pr calculated))
-           false ) ]
+  (let [  temp (System/getenv "TEMP")
+          expected-path (str temp "/expected.clj")
+          calculated-path (str temp "/calculated.clj")
+          failed
+          (fn []
+            (println "expected: " expected-path)
+            (write-to-file expected-path expected)
+            (println "calculated: " calculated-path)
+            (write-to-file calculated-path calculated)
+            (println "kdiff " expected-path " " calculated-path)
+            false ) ]
     (if (= calculated expected) true (failed))))
 
