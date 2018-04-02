@@ -48,6 +48,10 @@
 
 (defn index-by-id [items] (index-single items :id))
 
+(defn- amend-with-id [ [id attr-map] ] (assoc attr-map :id id) )
+
+(defn vals-with-id [ big-map ] (set (map amend-with-id (seq big-map))))
+
 (defn map-map-values
     { :test (fn [] (is (= { :a 11 :b 21 } (map-map-values (partial + 1) { :a 10 :b 20 })))) }
     [ f-values m ] (map-map-keys-values identity f-values m))
@@ -163,7 +167,8 @@
         (and (map? item) (empty? item)) "{ }"
         (map? item) (str "{" (pretty-map-content item child-indent) " }" )
         (set? item) (str "#{" (pretty-arr-content item child-indent) " }" )
-        :else (str "[" (pretty-arr-content item child-indent) " ]" )))))
+        (vector? item) (str "[" (pretty-arr-content item child-indent) " ]" )
+        :else (str "(list " (pretty-arr-content item child-indent) " )" )))))
 
 ; File utils
 
