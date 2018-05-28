@@ -1,4 +1,4 @@
-(defproject org.clojars.rbrother/clojure-common "0.1.3"
+(defproject org.clojars.rbrother/clojure-common "0.1.4"
   :description "Robert J. Brotherus Common Clojure routines"
   :url "https://github.com/rbrother/clojure-common"
   :license {:name "Eclipse Public License"

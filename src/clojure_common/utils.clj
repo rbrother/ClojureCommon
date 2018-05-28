@@ -192,3 +192,18 @@
             false ) ]
     (if (= calculated expected) true (failed))))
 
+; Repl with locals visible
+; https://stackoverflow.com/questions/49599694/how-to-see-clojure-local-variables-in-local-repl
+
+(defmacro locals []
+  (into {}
+        (map (juxt name identity))
+        (keys &env)))
+
+(defn defs [vars]
+  (doseq [[k v] vars]
+    (eval (list 'def (symbol k) v))))
+
+(defmacro repl []
+  `(let [ls# (locals)]
+     (clojure.main/repl :init #(defs ls#))))
